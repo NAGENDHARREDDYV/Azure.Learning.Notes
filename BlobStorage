@@ -27,3 +27,14 @@ Page blobs - to store virtual hard disks, they are optimised for random read/wri
 Block blobs -  to store images, videos etc . comprised of mutiple blocks of data, can break data into mutiple chunks/blocks for multipart upload.
 Append Blobs - used for text files /log files  where its common to appending a line item at the end of file. 
 
+Creating Storage Account:
+
+Need a unique name 
+
+Access tier : 
+Cool - for less freq access data, you pay less
+Hot - for more freq access data
+
+Account kind : General purpose vs Blob storage 
+if blob storage : you will have both cool and hot and you wont be able to work with table storage or storage keys, strictly for storing blobs
+if GP : hot/cool access tier wont be available
