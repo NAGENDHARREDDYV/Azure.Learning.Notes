@@ -1,0 +1,29 @@
+Blob Storage: 
+
+Overview: 
+
+Blob : Binary large object
+Blob is for storage of large amount of unstructured text or images or videos or disk images or binary data. (similar to S3 in AWS).
+You need a storage account first
+The account name is globally unique
+
+All the files stored, are accessible from storage service using a public HTTP url, and the name of the storage account name is the first portion of that address.
+example: https://Nagendharstorageaccount.blob.core.windows.net
+
+Once you have storage account, you create containers under neath the storage account to hold your blobs
+Storage account -> Container -> blobs
+
+Nagendharstorageaccount -> a container for images / a container for videos etc -> inside images container you will have images(there are blobs)
+
+
+Nagendharstorageaccount -> Imagescontainer-> image1.png,image2.png
+Nagendharstorageaccount -> Videoscontainer -> video1.mp4, video2.mp4
+
+to access the url format : https://Nagendharstorageaccount.blob.core.windows.net/imagescontainer/image1.png 
+
+
+Three diff blob types:
+Page blobs - to store virtual hard disks, they are optimised for random read/write operations
+Block blobs -  to store images, videos etc . comprised of mutiple blocks of data, can break data into mutiple chunks/blocks for multipart upload.
+Append Blobs - used for text files /log files  where its common to appending a line item at the end of file. 
+
