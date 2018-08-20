@@ -226,7 +226,124 @@ I can add multiple Key value pairs (Edit Metadata in portal) on containers and b
 ##Integrating Azure Storage with Azure CDN
 
 
+ - Create a Azure CDN profile
+ - Integrate with Azure Account
  
+ POP (point of presence) / Edge Servers : we basically replicate the content into POP(edge servers), when it is done . the file is accessed throught a different endpoint
+ 
+ endpoint looks like: nag2604.azureedge.net instead of https://nag2604.blob.core.windows.net
+same as AWS CDN (Edge Locations)
+-Data will have a TTL ( time to live configs)
+-useful when you have global base
+- while creating CDN profile, the location is just the location where the CDN profile gets stored. It doesnt have any significance to do with edgeservers etc
+
+#Pricing details:
+two vendors Verizon and Akamai, latest is standard microsoft(preview mode currently)
+
+1. P1 Premium Verizon: 
+All standard features
+Token authentication
+Performance analytics
+Realtime analytics
+Mobile device rules
+Custom rules engine
+Cache/Header settings
+URL redirect/rewrite
+0.127
+MIN GBP PER GB UP TO 10TB
+
+2. S1 Standard Verizon
+Endpoint HTTPS
+Custom domain HTTPS
+Content Purge/Load
+Compression
+Geo-filtering
+Core analytics
+Dynamic delivery
+0.065
+
+3. S2 Standard Akamai
+Endpoint HTTPS
+Content Purge
+Compression
+Geo-filtering
+Media optimization
+Core analytics
+Dynamic delivery
+0.065
+MIN GBP PER GB UP TO 10TB
+
+4. S3 Standard Microsoft(Preview)*
+Endpoint HTTPS
+Custom domain HTTPS
+Content Purge
+Compression
+Geo-filtering
+Core analytics
+*Preview price 50% off
+0.032
+MIN GBP PER GB UP TO 10TB
+
+#Use create endpoint.
+
+Endpoint name is unique : Nag2604
+Origin type : since we are integrating with azure storage, select Storage
+Origin hostname : give storage account nag2604.blob.core.windows.net
+
+when we create , we get Endpoint that you have created and CDN profile
+
+Edit CDN profile to add additional endpoints that you want to configure.
+
+You can get rid of cache using Purge option
+
+CDN pop locations will list of origin datacentres. ###Verison discloses location, but akamai will not disclose their edgeserver locations
+
+Endpoint name will be : https://Nage2604.azureedge.net 
+origin name will be storage account: https://Nage2604.blob.core.windows.net
+
+-supports both HTTP and HTTPS protocals
+-We can make some content unavailable to people around some geolocations using #Geofiltering option
+
+-we can access image1 using
+https://Nage2604.blob.core.windows.net/Images/image1.png or 
+https://Nage2604.azureedge.net/Images/image1.png
+
+-Using CDN #Origin path - we can give a specific directory example like container Images or subfolder PNG-Images etc
+
+-We can setup our own custom domain for the endpoint
+
+
+##############
+Implementing Custom Domains 
+
+Storage acc - blob servies - customon domain
+
+Configure a custom domain for accessing blob data in your Azure storage account, like www.contoso.com.
+There are two methods you can use to set up a custom domain.
+1. Create a CNAME record with your DNS provider that points from your domain (like www.contoso.com) 
+to nag2604.blob.core.windows.net then enter you domain below. This method is simpler, 
+but results in a brief downtime while Azure verifies the domain registration.
+2. Create a CNAME record with your DNS provider that points from the "asverify" subdomain (like asverify.www.contoso.com) 
+to asverify.nag2604.blob.core.windows.net. After this step completes, 
+enter your domain below (exclude "asverify"). This method does not incur any downtime. To use this method, select the 'Use indirect CNAME validation' checkbox.
+
+#no cerificate support yet in customdomain 
+custom domain can be done using CDN as well.
+
+
+####################
+Scalability to blob storage
+
+best way to scale is implement CDN service.
+another way is to break things into multiple storage accounts.
+Infinitely scale but depends on the patterns and usage of the application. 
+Use mix of CDN + multiple storage accounts to have best performance.
+
+
+
+
+
+
 
 
 
