@@ -1,12 +1,14 @@
-Blob Storage: 
+#Blob Storage: 
 
-Overview: 
+############
+#Overview: 
+- Blob Storage:
+  - Container model
+  - Containers have security.
+  - Blob = binary large object.
+  - 500TB capacity.
 
-Blob : Binary large object
-Blob is for storage of large amount of unstructured text or images or videos or disk images or binary data. (similar to S3 in AWS).
-You need a storage account first
-The account name is globally unique
-
+  - Endpoint: http://myaccount.blob.core.windows.net/mycontainer/myblob
 All the files stored, are accessible from storage service using a public HTTP url, and the name of the storage account name is the first portion of that address.
 example: https://Nagendharstorageaccount.blob.core.windows.net
 
@@ -22,14 +24,34 @@ Nagendharstorageaccount -> Videoscontainer -> video1.mp4, video2.mp4
 to access the url format : https://Nagendharstorageaccount.blob.core.windows.net/imagescontainer/image1.png 
 
 
-Three diff blob types:
+####################
+#Three diff blob types:
 Page blobs - to store virtual hard disks, they are optimised for random read/write operations
 Block blobs -  to store images, videos etc . comprised of mutiple blocks of data, can break data into mutiple chunks/blocks for multipart upload.
 Append Blobs - used for text files /log files  where its common to appending a line item at the end of file. 
 
-Creating Storage Account:
+  # Block blobs:
+    - Optimized for streaming and storing objects in the Cloud.
+    - Block blobs are idea for large binary (or text) file storage that don't need to be frequently read from or accessed to.
+    - Block blobs support up to 50,000 blocks of up to 100MB each, or approximately 4.75 TB.
+    - Cool and Archive options:
+      - Cool early deletion period of 30 days.
+      - Archive early deletion period of 180 days.
+  # Append blobs: Similar to block blobs but optimized for append only (log files).
+  # Page blobs:
+    - Good for random writes, represents harddisk, virtual machine storage.
+    - Page blobs are better for Virtual machine VHD files.
+    
+################
+Blob is for storage of large amount of unstructured text or images or videos or disk images or binary data. (similar to S3 in AWS).
+You need a storage account first
 
-Need a unique name 
+*The account name is globally unique
+
+#############
+##Blobs and Files:
+
+Creating Storage Account: Need a unique name 
 
 Access tier : 
 Cool - for less freq access data, you pay less
@@ -38,3 +60,178 @@ Hot - for more freq access data
 Account kind : General purpose vs Blob storage 
 if blob storage : you will have both cool and hot and you wont be able to work with table storage or storage keys, strictly for storing blobs
 if GP : hot/cool access tier wont be available
+
+#Performance :
+- #Standard : Backed by magnetic disks (slower than premium) 
+- #Premium : Backed by SSD. Less storage latency
+
+*More replication options in standard(4 zone,Local,Geo,Read access Geo- options) than in premium(only LRS locally redundant).
+LRS - 3 copies within Region
+ZRS - 3 copies within two datacenters
+GRS - 3 copies in Primary datacenters, 3 copies in another DS
+Read access GRS - same as GRS but ability to read info in both DS
+
+#Encryption Enabled/disabled: at rest is available using managed encryption service
+
+#Secure transfer - safe https based connections needed to access the blobs when enabled.
+Note : if you add a custom domain to your storage account instead of azure domains, even if secure transfer, the blob can be accessed by HTTP.
+
+#####################################
+##Getting started with SDK:
+
+#Create a Storage account in azure
+
+#Install visual studio sdk
+
+#Install nuget packages: 
+Microsoft.WindowsAzure.Storage
+Microsoft.WindowsAzure.Configuration
+
+#In your project app.config add the below
+<appSettings>
+  <add key="StorageConnection" value="connectionstring of azure account"/>
+</appSettings>
+
+######
+#To fetch the storage account using code use below.
+CloudStorageAccount storageAccount = CloudStorageAccount.Parse(CloudConfigurationManager.GetSetting("StorageConnection"));
+//this will get the storage account value from the app.config
+
+//next create instance of cloudblobclient
+ CloudBlobClient blobClient = storageAccount.CreateCloudBlobClient(); //this is the client we will be working with storage service.
+ 
+ // Create a container called 'quickstartblobs' and append a GUID value to it to make the name unique. 
+ Example1:
+ CloudBlobContainer cloudBlobContainer = cloudBlobClient.GetContainerReference("quickstartblobs" + Guid.NewGuid().ToString());
+ cloudBlobContainer.Create();
+ Example2: create a images container
+CloudBlobContainer mycontainer = blobClient.GetContainerReference("images");
+mycontainer.CreateIfNotExists(); //mycontainer.Create();// by default containers are private when created
+
+//to pass what access type
+mycontainer.CreateIfNotExists(BlobContainerPublicAccessType.Blob); // normal as we create in portal
+mycontainer.CreateIfNotExists(BlobContainerPublicAccessType.Off); //private
+
+#another way when you use  mycontainer.Create() is 
+ // Set the permissions so the blobs are public. 
+ BlobContainerPermissions permissions = new BlobContainerPermissions
+{
+PublicAccess = BlobContainerPublicAccessType.Blob
+};
+cloudBlobContainer.SetPermissions(permissions);
+                    
+
+Code to create container images in a storage account of yours :
+CloudStorageAccount storageAccount = CloudStorageAccount.Parse(CloudConfigurationManager.GetSetting("StorageConnection"));
+CloudBlobClient blobClient = storageAccount.CreateCloudBlobClient();
+CloudBlobContainer mycontainer = blobClient.GetContainerReference("images");
+mycontainer.CreateIfNotExists(BlobContainerPublicAccessType.Blob); //mycontainer.Create();
+
+#############
+#now to upload a blob to container 
+
+-upload from file
+CloudBlockBlob img1= mycontainer.GetBlockBlobReference("image1.png"); //name of the blockblob
+img1.UploadFromFile("local file path here");
+
+--upload from stream
+using (var filestream = System.IO.File.OpenRead(@"local file path"))
+  {
+    img1.UploadFromStream(filestream);
+   }
+               
+               #################
+ //to list blobs in container
+
+            var blobs = mycontainer.ListBlobs();
+            foreach (var item in blobs)
+            {
+                Console.WriteLine(item.Uri);
+            }
+#################            
+ //to download file
+  CloudBlockBlob img1 = mycontainer.GetBlockBlobReference("image1.png");
+  using (var filestream = System.IO.File.OpenRead(@"local file path"))
+   {
+           img1.DownloadToStream(filestream);
+   }
+
+#############
+//to download to file
+ CloudBlockBlob img1 = mycontainer.GetBlockBlobReference("image1.png");
+  img1.DownloadToFile("local file path")
+
+//delete container
+if (yourcontainer != null)
+{
+yourcontainer.DeleteIfExists();
+}
+
+####################
+//Async Copy  blobs btw containers or copy btw blobs in a storage account 
+Example: copy image1.png to image2.png
+
+            CloudBlockBlob img1 = mycontainer.GetBlockBlobReference("image1.png");// reference to existing image
+            CloudBlockBlob img2 = mycontainer.GetBlockBlobReference("image2.png");//new image ref
+
+            var cb_callback = new AsyncCallback(x => Console.WriteLine("blob copy completed"));
+
+            img2.BeginStartCopy(img1.Uri, cb_callback, null);
+
+* You can do asynchronous copy operations against blobs
+
+
+###########################
+#Creatingblob hierarchies
+i.e. creating subfolders,subcontainers which concept doesnt exist in portal, but you can do kindoff hierachy using prefixes on a blob and you have to do that through code
+to have a subfolder PNG-images under images use below
+
+CloudBlockBlob img3 = mycontainer.GetBlockBlobReference("PNG-Images/image3.png"); //for prefixes the DNS rules of naming convention apply i.e. numbers lettercharacters dashes are ok but not others
+            using (var filestream = System.IO.File.OpenRead(@"localpath of file"))
+            {
+                img3.UploadFromStream(filestream);
+            }
+     // the access policies will be of images container, since the object is actually in images container , but not any sub container but only change of path       
+     //https://nag2604.blob.core.windows.net/images/PNG-Images/image3.png compared to image1 (https://nag2604.blob.core.windows.net/images/image1.png)
+
+####################
+#Setting Metadata on the containers
+I can add multiple Key value pairs (Edit Metadata in portal) on containers and blobs, anything that makes sense for my application.
+
+
+ setMetaDataToContainer(mycontainer);
+ 
+   //our function to set metadata
+   static void setMetaDataToContainer(CloudBlobContainer container) //userdefinedfunction
+        {
+            container.Metadata.Clear();
+            container.Metadata.Add("Owner", "Nagendhar"); //one way to add
+            container.Metadata["Updated"] = DateTime.Now.ToString(); //second way of adding
+            container.SetMetadata();
+        }
+ //same with adding metadata to blobs
+
+#Getmetadata
+      static void getMetaDataofContainer(CloudBlobContainer container)//userdefined function
+        {
+            container.FetchAttributes();
+            foreach (var item in container.Metadata)
+            {
+                Console.WriteLine("{0} : {1}", item.Key, item.Value);
+            }
+        }
+ 
+############################################################
+
+##Integrating Azure Storage with Azure CDN
+
+
+ 
+
+
+
+
+
+
+
+
