@@ -1,1 +1,30 @@
 
+##Azure Table Storage
+- a non relational database system in the Azure
+- items stores in these tables do not need a specific schema
+- depending on requirement, it can be great alternative to a relational database system
+- great performance at low cost
+- this is not a good one when you need complex joins, datasets , stored procedures etc
+
+
+##how it works
+
+Storage Account(Nag2604) -> Tables(Orders/Users etc tables) -> Entities (examples : [OrderID,Date,ItemName] or [Name,Mobile,Email])
+
+Entities - collection of properties (just like record in a database)
+each entity is going to have multiple properties made up of key value pairs
+Single entity can have up to 252 properties to store information
+
+Entities:
+Each item in every table in Azure storage to ever build should have a Partition Key and a Row Key.
+
+Partition key - gives a way to shard( horizontal partition of data in a database or search engine) data across multiple 
+back end servers.
+Example :
+PartitionKey: Overnight
+RoWKey:34
+Date:8/21/18
+ItemName:Item #11
+
+
+
